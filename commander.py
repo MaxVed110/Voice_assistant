@@ -3,10 +3,13 @@ import speech_recognition
 import pyttsx3
 from random import choice
 from serpapi import GoogleSearch
+import tkinter as tk
+from tkinter.filedialog import askdirectory
 
 
 sr = speech_recognition.Recognizer()
 sr.pause_threshold = 0.5
+sr.energy_threshold = 1000
 
 list_commands = {
     'commands': {
@@ -14,22 +17,23 @@ list_commands = {
         'create_todo_list': ['добавить задачу'],
         'play_sound': ['включи музыку'],
         'open_browser': ['открой браузер'],
+        'internet_search': ['поиск', 'найди'],
         'shutdown_reboot_pc': {
             'shutdown_reboot_pc': ['выключи', 'перезагрузи']
         }
-    }
+    },
+    'directory': '0'
 }
 
 
 def listen_command():
     with speech_recognition.Microphone() as micro:
         sr.adjust_for_ambient_noise(source=micro, duration=0.5)
-        try:
-            audio = sr.listen(source=micro)
-            phrase = sr.recognize_google(audio_data=audio, language='ru-RU').lower()
-            return phrase
-        except speech_recognition.UnknownValueError():
-            print('Повтори фразу')
+        print('Можно говорить')
+        audio = sr.listen(source=micro)
+        phrase = sr.recognize_google(audio_data=audio, language='ru-RU').lower()
+        print(phrase)
+        return phrase
 
 
 def answer_function(text: str):
@@ -70,7 +74,16 @@ def create_todo_list():
 
 
 def play_sound():
-    files = os.listdir(r"C:\Users\Максим\Desktop\Music")
+    if list_commands['directory'] == '0':
+        window = tk.Tk()
+        intro = tk.Label(text="Выберите папку с музыкой\n(для продолжения закройте это окно)",
+                         width=40, height=4, font='Times 20')
+        intro.pack()
+        window.mainloop()
+        folderlocation = askdirectory()
+        list_commands['directory'] = folderlocation
+
+    files = os.listdir(list_commands['directory'])
     if len(files) != 0:
         random_file = f'{choice(files)}'
         answer_function(f'Колбасимся под {random_file.split("/")[-1]}')
@@ -80,8 +93,6 @@ def play_sound():
         answer_function('Музыки по адресу нет')
         return 'Музыки по адресу нет'
 
-
-#######################
 
 def internet_search():
     answer_function('Что хотите найти?')
@@ -97,20 +108,28 @@ def internet_search():
 
     print(dict_results['organic_results'][0]['link'])
     print(dict_results['organic_results'][0]['snippet'])
+    answer_function(dict_results['organic_results'][0]['snippet'])
 
 
 def main():
+    print('start')
+    n = 0
     while True:
+        n += 1
+        print(f'цикл {n}')
         phrase = listen_command()
 
         for key, value in list_commands['commands'].items():
             if phrase in value:
+                print(phrase)
                 print(globals()[key]())
+                continue
             else:
                 if type(list_commands['commands'][key]) is dict:
                     for key_c, value_c in list_commands['commands'][key].items():
                         if phrase in value_c:
                             print(globals()[key_c](phrase))
+                            continue
                         else:
                             print('Повтори фразу')
-
+                            continue
