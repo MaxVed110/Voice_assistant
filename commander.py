@@ -1,11 +1,12 @@
 import os
+import webbrowser
+
 import speech_recognition
 import pyttsx3
 from random import choice
 from serpapi import GoogleSearch
 import tkinter as tk
 from tkinter.filedialog import askdirectory
-
 
 sr = speech_recognition.Recognizer()
 sr.pause_threshold = 0.5
@@ -15,12 +16,14 @@ list_commands = {
     'commands': {
         'greeting': ['привет'],
         'create_todo_list': ['добавить задачу'],
+        'view_todo_list': ['посмотреть список дел', 'открой список дел'],
         'play_sound': ['включи музыку'],
         'open_browser': ['открой браузер'],
         'internet_search': ['поиск', 'найди'],
         'shutdown_reboot_pc': {
             'shutdown_reboot_pc': ['выключи', 'перезагрузи']
-        }
+        },
+        'open_internet_search': ['открой', 'перейди', 'покажи']
     },
     'directory': '0'
 }
@@ -68,9 +71,19 @@ def open_browser():
 def create_todo_list():
     answer_function('Что добавим в список дел?')
     phrase = listen_command()
-    with open('To_Do_list.txt', 'a') as file:
+    if os.path.exists('To_Do_list.txt'):
+        x = 'a'
+    else:
+        x = 'w'
+    with open('To_Do_list.txt', x) as file:
         file.write(f'{phrase}\n')
     answer_function(f'Задача {phrase} записана в список дел')
+
+
+def view_todo_list():
+    with open('To_Do_list.txt') as file:
+        for line in file:
+            print(line)
 
 
 def play_sound():
@@ -109,6 +122,21 @@ def internet_search():
     print(dict_results['organic_results'][0]['link'])
     print(dict_results['organic_results'][0]['snippet'])
     answer_function(dict_results['organic_results'][0]['snippet'])
+
+
+def open_internet_search():
+    answer_function('Какую ссылку открыть?')
+    phrase = listen_command()
+    parameter = {
+        "engine": "yandex",
+        "text": phrase,
+        "api_key": "1a15ef08c83fb7bba62201558cd28c125d1eccab2a77a808e84ed7aa55f20d3f"
+    }
+
+    search = GoogleSearch(parameter)
+    dict_results = search.get_dict()
+
+    webbrowser.open_new_tab(dict_results['organic_results'][0]['link'][0])
 
 
 def main():
