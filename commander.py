@@ -1,42 +1,50 @@
 import os
 import webbrowser
-
 import speech_recognition
 import pyttsx3
+import tkinter as tk
+
 from random import choice
 from serpapi import GoogleSearch
-import tkinter as tk
 from tkinter.filedialog import askdirectory
+
+# объект для прослушивания
 
 sr = speech_recognition.Recognizer()
 sr.pause_threshold = 0.5
-sr.energy_threshold = 1000
+sr.energy_threshold = 400
 
 list_commands = {
     'commands': {
-        'greeting': ['привет'],
+        'greeting': ['привет', 'Максон', 'привет максон', 'эй максон'],
         'create_todo_list': ['добавить задачу'],
         'view_todo_list': ['посмотреть список дел', 'открой список дел'],
         'play_sound': ['включи музыку'],
         'open_browser': ['открой браузер'],
         'internet_search': ['поиск', 'найди'],
         'shutdown_reboot_pc': {
-            'shutdown_reboot_pc': ['выключи', 'перезагрузи']
+            'shutdown_reboot_pc': ['выключи', 'перезагрузи', 'выруби', 'отключи', 'перезагрузка', 'ребут']
         },
         'open_internet_search': ['открой', 'перейди', 'покажи']
     },
     'directory': '0'
 }
 
+# функция прослушивания микрофона
+
 
 def listen_command():
     with speech_recognition.Microphone() as micro:
         sr.adjust_for_ambient_noise(source=micro, duration=0.5)
         print('Можно говорить')
-        audio = sr.listen(source=micro)
-        phrase = sr.recognize_google(audio_data=audio, language='ru-RU').lower()
-        print(phrase)
-        return phrase
+        try:
+            audio = sr.listen(source=micro)
+            phrase = sr.recognize_google(audio_data=audio, language='ru-RU').lower()
+            print(phrase)
+            return phrase
+        except speech_recognition.UnknownValueError:
+            print('Ошибка, повторите фразу')
+            listen_command()
 
 
 def answer_function(text: str):
@@ -47,8 +55,8 @@ def answer_function(text: str):
 
 
 def greeting():
-    answer_function('Приветик')
-    return 'Приветик'
+    answer_function('Приветствую, что хотели?')
+    return 'Приветствую, что хотели?'
 
 
 def shutdown_reboot_pc(value: str):
@@ -135,8 +143,10 @@ def open_internet_search():
 
     search = GoogleSearch(parameter)
     dict_results = search.get_dict()
-
-    webbrowser.open_new_tab(dict_results['organic_results'][0]['link'][0])
+    webbrowser.register('YandexBrowser', None,
+                        webbrowser.BackgroundBrowser(
+                            r'C:\Program Files (x86)\Yandex\YandexBrowser\Application\browser.exe'))
+    webbrowser.get('YandexBrowser').open_new_tab(dict_results['organic_results'][0]['link'])
 
 
 def main():
