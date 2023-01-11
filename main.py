@@ -3,7 +3,8 @@ import commander
 import speech_recognition
 import pyttsx3
 
-
+from core import Assistant
+import webbrowser
 #
 # def main():
 #
@@ -21,6 +22,6 @@ import pyttsx3
 #
 #
 if __name__ == '__main__':
-    commander.main()
 
-
+    assistent = Assistant()
+    assistent.run_assistant()
