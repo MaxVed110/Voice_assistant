@@ -2,6 +2,8 @@ import speech_recognition
 
 
 class Microphone:
+
+    # Инициализация объекта для прослушивания
     def __init__(self):
         self.sr = speech_recognition.Recognizer()
         self.sr.pause_threshold = 1  # ToDo

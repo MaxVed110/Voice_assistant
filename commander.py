@@ -1,48 +1,14 @@
 import os
-import webbrowser
-import speech_recognition
-import pyttsx3
 import tkinter as tk
+import webbrowser
+import pyttsx3
 
 from random import choice
-from serpapi import GoogleSearch
 from tkinter.filedialog import askdirectory
+from serpapi import GoogleSearch
+from microphone import Microphone
 
-# Объект для прослушивания
-sr = speech_recognition.Recognizer()
-sr.pause_threshold = 1  # ToDo
-sr.energy_threshold = 1000
-
-# Список команд
-list_commands = {
-    'commands': {
-        'greeting': ['привет', 'максон', 'привет максон', 'эй максон'],
-        'create_todo_list': ['добавить задачу'],
-        'view_todo_list': ['посмотреть список дел', 'открой список дел'],
-        'play_sound': ['включи музыку'],
-        'open_browser': ['открой браузер'],
-        'internet_search': ['поиск', 'найди'],
-        'shutdown_reboot_pc': ['выключи', 'перезагрузи', 'выруби', 'отключи', 'перезагрузка', 'ребут'],
-        'open_internet_search': ['открой', 'перейди', 'покажи']
-    },
-    'directory': '0'
-}
-
-
-# Функция для прослушивания микрофона
-def listen_command():
-    with speech_recognition.Microphone() as micro:
-        sr.adjust_for_ambient_noise(source=micro, duration=0.5)
-        print('Можно говорить')
-        audio = sr.listen(source=micro, timeout=5, phrase_time_limit=5)  # ToDo
-        try:
-            #  audio = sr.listen(source=micro)
-            phrase = sr.recognize_google(audio_data=audio, language='ru-RU').lower()
-            print(phrase)
-            return phrase
-        except speech_recognition.UnknownValueError:
-            print('Ошибка, повторите фразу')
-            listen_command()
+microphone = Microphone()
 
 
 # Озвучивание ответов помощника
@@ -77,7 +43,7 @@ def shutdown_reboot_pc(value: str):
 
 
 # Открыть браузер (Яндекс по умолчанию)
-def open_browser():
+def open_browser(self):
     answer_function('Открываю Яндекс')
     try:
         files = r'C:\Program Files (x86)\Yandex\YandexBrowser\Application\browser.exe'
@@ -89,9 +55,9 @@ def open_browser():
 
 
 # Создать новый список дел или добавить запись (записная книжка)
-def create_todo_list():
+def create_todo_list(self):
     answer_function('Что добавим в список дел?')
-    phrase = listen_command()
+    phrase = self.microphone.listen_command()
     if os.path.exists('To_Do_list.txt'):
         x = 'w'
     else:
@@ -103,7 +69,7 @@ def create_todo_list():
 
 
 # Показать список дел
-def view_todo_list():
+def view_todo_list(self):
     answer_function('Показываю список дел')
     if os.path.exists('To_Do_list.txt'):
         with open('To_Do_list.txt') as file:
@@ -112,20 +78,21 @@ def view_todo_list():
     else:
         return 'Список дел пуст'
 
+    # Запуск музыки
 
-# Запуск музыки
-def play_sound():
+
+def play_sound(self):
     answer_function('Музыка так музыка')
-    if list_commands['directory'] == '0':
+    if self.list_commands['directory'] == '0':
         window = tk.Tk()
         intro = tk.Label(text="Выберите папку с музыкой\n(для продолжения закройте это окно)",
                          width=40, height=4, font='Times 20')
         intro.pack()
         window.mainloop()
         folderlocation = askdirectory()
-        list_commands['directory'] = folderlocation
+        self.list_commands['directory'] = folderlocation
 
-    files = os.listdir(list_commands['directory'])
+    files = os.listdir(self.list_commands['directory'])
     if len(files) != 0:
         random_file = f'{choice(files)}'
         answer_function(f'Колбасимся под {random_file.split("/")[-1]}')
@@ -138,9 +105,9 @@ def play_sound():
 
 
 # Поиск в интернете и выдача первой ссылки
-def internet_search():
+def internet_search(self):
     answer_function('Что хотите найти?')
-    phrase = listen_command()
+    phrase = self.microphone.listen_command()
     parameter = {
         "engine": "yandex",
         "text": phrase,
@@ -160,9 +127,9 @@ def internet_search():
 
 
 # Открывание ссылок
-def open_internet_search():
+def open_internet_search(self):
     answer_function('Какую ссылку открыть?')
-    phrase = listen_command()
+    phrase = self.microphone.listen_command()
     parameter = {
         "engine": "yandex",
         "text": phrase,
@@ -177,20 +144,18 @@ def open_internet_search():
     webbrowser.get('YandexBrowser').open_new_tab(dict_results['organic_results'][0]['link'])
     return 'Открыто'
 
-# Рабочий цикл
-# def main():
-#     print('start')
-#     n = 0
-#     while True:
-#         n += 1
-#         print(f'цикл {n}')
-#         phrase = listen_command()
-#
-#         for key, value in list_commands['commands'].items():
-#             if phrase in value:
-#                 print(phrase)
-#                 print(globals()[key]())
-#                 continue
-#             else:
-#                 print('Повтори фразу')
-#                 continue
+
+# Список команд
+list_commands = {
+    'commands': {
+        ('привет', 'максон', 'привет максон', 'эй максон'): greeting,
+        ('добавить задачу', 'есть дело'): create_todo_list,
+        ('посмотреть список дел', 'открой список дел'): view_todo_list,
+        ('включи музыку', 'музон'): play_sound,
+        ('открой браузер', 'интернет'): open_browser,
+        ('поиск', 'найди'): internet_search,
+        ('выключи', 'перезагрузи', 'выруби', 'отключи', 'перезагрузка', 'ребут'): shutdown_reboot_pc,
+        ('открой', 'перейди', 'покажи'): open_internet_search
+    },
+    'directory': '0'
+}

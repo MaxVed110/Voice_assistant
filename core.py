@@ -1,21 +1,26 @@
 from commander import *
 
 
+# Основной класс
 class Assistant:
-    def __int__(self, name):
-        self.name = name
 
+    def __init__(self, name: str):
+        self.name = name
+        self.microphone = Microphone()
+
+    # Рабочий цикл
     def run_assistant(self):
         answer_function(f'Привет, я {self.name} что хотели?')
         n = 0
         while True:
             n += 1
             print(f'цикл {n}')
-            phrase = listen_command()
-            for key, value in list_commands['commands'].items():
-                if phrase in value:
+            phrase = self.microphone.listen_command()
+            for key in list_commands['commands'].keys():
+                if phrase in key:
                     print(phrase)
-                    print(globals()[key]())
+                    print()
+                    print(list_commands['commands'][key]())
                     continue
                 else:
                     print('Повтори фразу')
