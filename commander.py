@@ -113,17 +113,21 @@ def internet_search(self):
         "text": phrase,
         "api_key": "1a15ef08c83fb7bba62201558cd28c125d1eccab2a77a808e84ed7aa55f20d3f"
     }
+    try:
+        search = GoogleSearch(parameter)
+        dict_results = search.get_dict()
+        list_res = [dict_results['organic_results'][0]['link'], dict_results['organic_results'][0]['snippet']]
 
-    search = GoogleSearch(parameter)
-    dict_results = search.get_dict()
-    list_res = [dict_results['organic_results'][0]['link'], dict_results['organic_results'][0]['snippet']]
+        """ToDo, посмотреть выдачу (правильность)"""
+        # print(dict_results['organic_results'][0]['link'])
+        # print(dict_results['organic_results'][0]['snippet'])
 
-    """ToDo, посмотреть выдачу (правильность)"""
-    # print(dict_results['organic_results'][0]['link'])
-    # print(dict_results['organic_results'][0]['snippet'])
-
-    answer_function(dict_results['organic_results'][0]['snippet'])
-    return f'{list_res[0]} \n{list_res[1]}'
+        answer_function(dict_results['organic_results'][0]['snippet'])
+        return f'{list_res[0]} \n{list_res[1]}'
+    except FileNotFoundError:
+        text = 'Такого браузера нет. Пожалуйста, скачайте его или переместите в другую директорию (PFx86)'
+        answer_function(text)
+        return text
 
 
 # Открывание ссылок
@@ -135,14 +139,18 @@ def open_internet_search(self):
         "text": phrase,
         "api_key": "1a15ef08c83fb7bba62201558cd28c125d1eccab2a77a808e84ed7aa55f20d3f"
     }
-
-    search = GoogleSearch(parameter)
-    dict_results = search.get_dict()
-    webbrowser.register('YandexBrowser', None,
-                        webbrowser.BackgroundBrowser(
-                            r'C:\Program Files (x86)\Yandex\YandexBrowser\Application\browser.exe'))
-    webbrowser.get('YandexBrowser').open_new_tab(dict_results['organic_results'][0]['link'])
-    return 'Открыто'
+    try:
+        search = GoogleSearch(parameter)
+        dict_results = search.get_dict()
+        webbrowser.register('YandexBrowser', None,
+                            webbrowser.BackgroundBrowser(
+                                r'C:\Program Files (x86)\Yandex\YandexBrowser\Application\browser.exe'))
+        webbrowser.get('YandexBrowser').open_new_tab(dict_results['organic_results'][0]['link'])
+        return 'Открыто'
+    except FileNotFoundError:
+        text = 'Такого браузера нет. Пожалуйста, скачайте его или переместите в другую директорию (PFx86)'
+        answer_function(text)
+        return text
 
 
 # Список команд
